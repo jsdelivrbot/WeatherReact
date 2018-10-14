@@ -12,16 +12,23 @@ class SearchBar extends Component {
 
     render(){
         return (
-            <div>
-                <input value={this.state.term} onChange={this.handleChange} />
-                <button onClick={() => this.handleClick()}>Search</button>
+            <div className="input-group">
+                <input 
+                    className="form-control"
+                    value={this.state.term} 
+                    onChange={this.handleChange} />
+                <span className="input-group-btn">
+                    <button className="btn btn-primary" onClick={() => this.handleClick()}>Search</button>
+                </span>
             </div>
         ); 
     }
 
+    // change state value when the user types something
     handleChange = (event) => {
         this.setState({term: event.target.value});
     }
+    // call the method that get's the weather information when the button is clicked
     handleClick = () => {
         this.getWeather();
     }
@@ -34,25 +41,28 @@ class SearchBar extends Component {
         let urlDay = 'http://api.openweathermap.org/data/2.5/weather?q='+city+'&appid='+API_KEY;
         let urlWeek = 'http://api.openweathermap.org/data/2.5/forecast?q='+city+'&appid='+API_KEY;
 
-        let dayResponse = await fetch(PROXY + urlDay);
-        let dayJson = await dayResponse.json();
-        this.setState(() => {
-            return {day: dayJson};
-        });
+        try {
+            // call api and get current day weather
+            let dayResponse = await fetch(PROXY + urlDay);
+            let dayJson = await dayResponse.json();
+            // set fetched json object to state
+            this.setState(() => {
+                return {day: dayJson};
+            });
+            // call api and get next days weather
+            let weekResponse = await fetch(PROXY + urlWeek);
+            let weekJson = await weekResponse.json();
+            // set fetched json object to state
+            this.setState(() => {
+                return {week: weekJson};
+            });
+        } catch(err){
+            console.log('Unexpected error :(',err,') ,Please try again.')
+        }
 
-        let weekResponse = await fetch(PROXY + urlWeek);
-        let weekJson = await weekResponse.json();
-        this.setState(() => {
-            return {week: weekJson};
-        });
-
-        console.log('week search log :', this.state.week);
-        console.log('day search log :', this.state.day);
-
-        this.props.getWeatherData(this.state.day, this.state.week);
-        
-    }
-    
+        // pass state to index.js
+        this.props.getWeatherData(this.state.day, this.state.week);   
+    }   
 }
 
 export default SearchBar;
